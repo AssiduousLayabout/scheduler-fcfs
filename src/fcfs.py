@@ -123,26 +123,9 @@ def print_process_stats(process_list):
     """Prints information about each process
     """
     print("|Processes      |Arrival Time   |Burst Time     |Completion Time|Turnaround Time|Waiting Time   |")
+    process_template = "|{process.process_name:<15}|{process.arrival_time:<15}|{process.burst_time:<15}|{process.completion_time:<15}|{process.turnaround_time:<15}|{process.wait_time:<15}|"
     for process in process_list:
-        print("|" + str(process.process_name), end='')
-        for j in range(15, len(str(process.process_name)), -1):
-            print(" ", end='')
-        print("|" + str(process.arrival_time), end='')
-        for j in range(15, len(str(process.arrival_time)), -1):
-            print(" ", end='')
-        print("|" + str(process.burst_time), end='')
-        for j in range(15, len(str(process.burst_time)), -1):
-            print(" ", end='')
-        print("|" + str(process.completion_time), end='')
-        for j in range(15, len(str(process.completion_time)), -1):
-            print(" ", end='')
-        print("|" + str(process.turnaround_time), end='')
-        for j in range(15, len(str(process.turnaround_time)), -1):
-            print(" ", end='')
-        print("|" + str(process.wait_time), end='')
-        for j in range(15, len(str(process.wait_time)), -1):
-            print(" ", end='')
-        print("|")
+        print (process_template.format(process = process))
 
 def print_separator():
     """Prints a separator in between sections of output
@@ -154,21 +137,16 @@ def print_gantt_chart(timeslices):
     """
     print("Gantt Chart:")
 
-    for timeslice in timeslices:
-        print("|" + timeslice['name'], end='')
-        for j in range(15, len(str(timeslice['name'])), -1):
-            print(" ", end='')
-    print("|")
+    # Demonstrating that we can create inner helper functions
+    def format_name(name): return "{name:<15}".format(name=name)
+    def format_time(time): return "{time:<16}".format(time=time)
 
-    time_markers = [timeslice['end'] for timeslice in timeslices]
-    # There's a special case that we need to mark time 0 as well as the end times for each timeslice, so add 0 to the start of the array
-    time_markers = [0, *time_markers]
+    padded_names = [format_name(timeslice['name']) for timeslice in timeslices]
+    print("|", "|".join(padded_names), "|", sep='')
 
-    for time in time_markers:
-        print(str(time), end='')
-        for j in range(16, len(str(time)), -1):
-            print(" ", end='')
-    print("")
+    padded_time_markers = [format_time(timeslice['end']) for timeslice in timeslices]
+    # There's a special case that we need to mark time 0 as well as the end times for each timeslice, so print 0 before the array
+    print (format_time(0), "".join(padded_time_markers), sep='')
 
 
 def print_overall_stats(summary_stats):
