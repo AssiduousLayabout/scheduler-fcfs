@@ -25,15 +25,10 @@ class Process:
         self.wait_time = self.turnaround_time - self.burst_time
         return self.completion_time
 
-
-
-gantt_t = []
-gantt_b = [0]
-
 def main():
     process_list = get_input()
-    simulate_process_execution(process_list)
-    print_output(process_list)
+    timeslices = simulate_process_execution(process_list)
+    print_output(process_list, timeslices)
 
 
 def get_input():
@@ -69,7 +64,7 @@ def simulate_process_execution(process_list):
     """
     # Get a new copy of our process list, sorted by arrival times
     sorted_list = sort_by_arrival_time(process_list)
-
+    timeslices = []
     time = 0
     
     # Continue as long as there are processes to execute
@@ -82,13 +77,19 @@ def simulate_process_execution(process_list):
             current_process = sorted_list.pop(0)
             time = current_process.run(time)
 
-            gantt_t.append(current_process.process_name)
-            gantt_b.append(time)
-        else:
-            gantt_t.append("IDLE")
-            time = sorted_list[0].arrival_time
-            gantt_b.append(time)
+            timeslices.append({
+                'name': current_process.process_name, # Alternately you could store a reference to the Process itself, or None for idle
+                'end': time
+            })
 
+        else:
+            time = sorted_list[0].arrival_time
+            timeslices.append({
+                'name': "IDLE",
+                'end': time
+            })
+
+    return timeslices
 
 def calculate_summary_stats(process_list):
     """Calculates statistics from our code execution
@@ -106,13 +107,13 @@ def calculate_summary_stats(process_list):
 
     return {'total_tat': total_tat, 'total_wt': total_wt, 'ave_tat': ave_tat, 'ave_wt': ave_wt}
 
-def print_output(process_list):
+def print_output(process_list, timeslices):
     """Renders output to the user
     """
     print_process_stats(process_list)
     print_separator()
     
-    print_gantt_chart()
+    print_gantt_chart(timeslices)
     print_separator()
 
     summary_stats = calculate_summary_stats(process_list)
@@ -148,19 +149,24 @@ def print_separator():
     """
     print("====================")
 
-def print_gantt_chart():
+def print_gantt_chart(timeslices):
     """Prints a gantt chart showing processor utilization
     """
     print("Gantt Chart:")
 
-    for i in range(0, len(gantt_t)):
-        print("|" + gantt_t[i], end='')
-        for j in range(15, len(str(gantt_t[i])), -1):
+    for timeslice in timeslices:
+        print("|" + timeslice['name'], end='')
+        for j in range(15, len(str(timeslice['name'])), -1):
             print(" ", end='')
     print("|")
-    for i in range(0, len(gantt_b)):
-        print(str(gantt_b[i]), end='')
-        for j in range(16, len(str(gantt_b[i])), -1):
+
+    time_markers = [timeslice['end'] for timeslice in timeslices]
+    # There's a special case that we need to mark time 0 as well as the end times for each timeslice, so add 0 to the start of the array
+    time_markers = [0, *time_markers]
+
+    for time in time_markers:
+        print(str(time), end='')
+        for j in range(16, len(str(time)), -1):
             print(" ", end='')
     print("")
 
